@@ -162,6 +162,7 @@ public class XtextGrammarRefactoringIntegrationTest extends AbstractLinkedEditin
 	public void testRefactorXtextGrammarWithoutGeneratedClassifier() throws Exception {
 		waitForBuild();
 		final XtextEditor editor = openEditor(grammarFile);
+		waitForReconciler(editor);
 		doRefactoring(editor);
 		waitForReconciler(editor);
 		waitForDisplay();
@@ -181,6 +182,7 @@ public class XtextGrammarRefactoringIntegrationTest extends AbstractLinkedEditin
 		ecoreResource.unload();
 		waitForBuild();
 		final XtextEditor editor = openEditor(grammarFile);
+		waitForReconciler(editor);
 		doRefactoring(editor);
 		waitForBuild();
 		checkConsistenceOfGrammar(editor);
@@ -224,6 +226,7 @@ public class XtextGrammarRefactoringIntegrationTest extends AbstractLinkedEditin
 		ecoreModelResource.unload();
 		waitForDisplay();
 		XtextEditor editor = openEditor(grammarFile);
+		waitForReconciler(editor);
 		doRefactoring(editor);
 		waitForBuild();
 		checkConsistenceOfGrammar(editor);
