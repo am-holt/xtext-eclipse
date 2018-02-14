@@ -113,8 +113,8 @@
 						<failIfNoTests>false</failIfNoTests>
 						<argLine>${memory-settings} ${os-jvm-flags}</argLine>
 						<includes>
-							<include>**/GrammarLinkingInWorkspaceTest.java</include>
-							<include>**/XtextGrammarRefactoringIntegrationTest.java</include>
+							<include>org/eclipse/xtext/xtext/ui/**/*.java</include>
+							
 							
 						</includes>
 					</configuration>
