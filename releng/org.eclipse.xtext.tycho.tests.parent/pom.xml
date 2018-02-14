@@ -110,14 +110,12 @@
 						<!-- <forkedProcessTimeoutInSeconds>1200</forkedProcessTimeoutInSeconds> -->
 						<useUIHarness>true</useUIHarness>
 						<useUIThread>true</useUIThread>
+						<failIfNoTests>false</failIfNoTests>
 						<argLine>${memory-settings} ${os-jvm-flags}</argLine>
 						<includes>
-							<include>**/Test*.java</include>
-							<include>**/*Test.java</include>
-							<include>**/*TestEx.java</include>
-							<include>**/*TestCase.java</include>
-							<!-- matches *Tests.java as well as *Test<n>.java -->
-							<include>**/*Test?.java</include>
+							<include>**/GrammarLinkingInWorkspaceTest.java</include>
+							<include>**/XextGrammarRefactoringIntegrationTest.java</include>
+							
 						</includes>
 					</configuration>
 				</plugin>
