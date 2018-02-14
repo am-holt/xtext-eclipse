@@ -114,7 +114,7 @@
 						<argLine>${memory-settings} ${os-jvm-flags}</argLine>
 						<includes>
 							<include>**/GrammarLinkingInWorkspaceTest.java</include>
-							<include>**/XextGrammarRefactoringIntegrationTest.java</include>
+							<include>**/XtextGrammarRefactoringIntegrationTest.java</include>
 							
 						</includes>
 					</configuration>
