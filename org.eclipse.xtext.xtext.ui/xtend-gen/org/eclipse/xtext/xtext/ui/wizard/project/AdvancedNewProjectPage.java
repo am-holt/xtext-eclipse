@@ -56,6 +56,8 @@ public class AdvancedNewProjectPage extends WizardPage {
   
   private Button createWebProject;
   
+  private Button createPEWebProject;
+  
   private Button createIdeProject;
   
   private Button createTestProject;
@@ -116,17 +118,22 @@ public class AdvancedNewProjectPage extends WizardPage {
         };
         this.createWebProject = this.CheckBox(it_1, _function_5);
         final Procedure1<Button> _function_6 = (Button it_2) -> {
+          it_2.setText(Messages.AdvancedNewProjectPage_projPEWeb);
+          it_2.setEnabled(true);
+        };
+        this.createPEWebProject = this.CheckBox(it_1, _function_6);
+        final Procedure1<Button> _function_7 = (Button it_2) -> {
           it_2.setText(Messages.AdvancedNewProjectPage_projIde);
           it_2.setEnabled(false);
           this.InfoDecoration(it_2, Messages.AdvancedNewProjectPage_projIde_description);
           GridData _gridData_1 = new GridData(SWT.LEFT, SWT.CENTER, true, false);
           it_2.setLayoutData(_gridData_1);
         };
-        this.createIdeProject = this.CheckBox(it_1, _function_6);
-        final Procedure1<Button> _function_7 = (Button it_2) -> {
+        this.createIdeProject = this.CheckBox(it_1, _function_7);
+        final Procedure1<Button> _function_8 = (Button it_2) -> {
           it_2.setText(Messages.WizardNewXtextProjectCreationPage_TestingSupport);
         };
-        this.createTestProject = this.CheckBox(it_1, _function_7);
+        this.createTestProject = this.CheckBox(it_1, _function_8);
       };
       this.Group(it, _function_1);
       final Procedure1<Group> _function_2 = (Group it_1) -> {
@@ -182,7 +189,7 @@ public class AdvancedNewProjectPage extends WizardPage {
         AdvancedNewProjectPage.this.validate(e);
       }
     };
-    final List<Button> uiButtons = Collections.<Button>unmodifiableList(CollectionLiterals.<Button>newArrayList(this.createUiProject, this.createIdeaProject, this.createWebProject));
+    final List<Button> uiButtons = Collections.<Button>unmodifiableList(CollectionLiterals.<Button>newArrayList(this.createUiProject, this.createIdeaProject, this.createWebProject, this.createPEWebProject));
     final SelectionAdapter selectionControlUi = new SelectionAdapter() {
       @Override
       public void widgetSelected(final SelectionEvent e) {
@@ -282,6 +289,7 @@ public class AdvancedNewProjectPage extends WizardPage {
     this.createUiProject.addSelectionListener(selectionControlUi);
     this.createIdeaProject.addSelectionListener(selectionControlUi);
     this.createWebProject.addSelectionListener(selectionControlUi);
+    this.createPEWebProject.addSelectionListener(selectionControlUi);
     this.createIdeProject.addSelectionListener(selectionControl);
     this.createSDKProject.addSelectionListener(selectionControl);
     this.createP2Project.addSelectionListener(selectionControlUpdateSite);
@@ -301,7 +309,7 @@ public class AdvancedNewProjectPage extends WizardPage {
   public Procedure0 checkWidgets(final SelectionEvent e) {
     Procedure0 _xblockexpression = null;
     {
-      final List<Button> uiButtons = Collections.<Button>unmodifiableList(CollectionLiterals.<Button>newArrayList(this.createUiProject, this.createIdeaProject, this.createWebProject));
+      final List<Button> uiButtons = Collections.<Button>unmodifiableList(CollectionLiterals.<Button>newArrayList(this.createUiProject, this.createIdeaProject, this.createWebProject, this.createPEWebProject));
       if ((this.isSelected(this.preferredBuildSystem, BuildSystem.MAVEN) && (!this.isBundleResolved("org.eclipse.m2e.maven.runtime")))) {
         this.<Control>reportIssue(IMessageProvider.WARNING, Messages.AdvancedNewProjectPage_noM2e);
       }
@@ -389,17 +397,22 @@ public class AdvancedNewProjectPage extends WizardPage {
           this.<Control>reportIssue(IMessageProvider.ERROR, _builder_3.toString(), _function_3);
         }
       }
-      if ((this.createWebProject.getSelection() && this.isSelected(this.preferredBuildSystem, BuildSystem.NONE))) {
+      if (((this.createPEWebProject.getSelection() || this.createWebProject.getSelection()) && this.isSelected(this.preferredBuildSystem, BuildSystem.NONE))) {
+        String text = "";
+        boolean _selection = this.createPEWebProject.getSelection();
+        if (_selection) {
+          text = this.createWebProject.getText();
+        } else {
+          text = this.createPEWebProject.getText();
+        }
         if ((this.preferredBuildSystem == source)) {
           StringConcatenation _builder_4 = new StringConcatenation();
           _builder_4.append("The \'");
-          String _text_3 = this.createWebProject.getText();
-          _builder_4.append(_text_3);
+          _builder_4.append(text);
           _builder_4.append("\' project can not be build without a build system.");
           _builder_4.newLineIfNotEmpty();
           _builder_4.append("Please <a>deselect \'");
-          String _text_4 = this.createWebProject.getText();
-          _builder_4.append(_text_4);
+          _builder_4.append(text);
           _builder_4.append("\'</a>.");
           final Procedure0 _function_4 = () -> {
             this.createWebProject.setSelection(false);
@@ -408,8 +421,7 @@ public class AdvancedNewProjectPage extends WizardPage {
         } else {
           StringConcatenation _builder_5 = new StringConcatenation();
           _builder_5.append("To build the \'");
-          String _text_5 = this.createWebProject.getText();
-          _builder_5.append(_text_5);
+          _builder_5.append(text);
           _builder_5.append("\' project, you need to choose Maven or Gradle build system.");
           _builder_5.newLineIfNotEmpty();
           _builder_5.append("Select <a>Gradle</a> build.");
@@ -430,11 +442,11 @@ public class AdvancedNewProjectPage extends WizardPage {
         this.autoSelectIdeProject = false;
         StringConcatenation _builder_6 = new StringConcatenation();
         _builder_6.append("\'");
-        String _text_6 = this.createIdeProject.getText();
-        _builder_6.append(_text_6);
+        String _text_3 = this.createIdeProject.getText();
+        _builder_6.append(_text_3);
         _builder_6.append("\' project was automatically selected as option \'");
-        String _text_7 = ((Button) source).getText();
-        _builder_6.append(_text_7);
+        String _text_4 = ((Button) source).getText();
+        _builder_6.append(_text_4);
         _builder_6.append("\' requires it.");
         this.<Control>reportIssue(IMessageProvider.INFORMATION, _builder_6.toString());
       }
@@ -445,11 +457,11 @@ public class AdvancedNewProjectPage extends WizardPage {
           this.autoSelectSDKProject = false;
           StringConcatenation _builder_7 = new StringConcatenation();
           _builder_7.append("\'");
-          String _text_8 = this.createSDKProject.getText();
-          _builder_7.append(_text_8);
+          String _text_5 = this.createSDKProject.getText();
+          _builder_7.append(_text_5);
           _builder_7.append("\' was automatically selected as option \'");
-          String _text_9 = ((Button) source).getText();
-          _builder_7.append(_text_9);
+          String _text_6 = ((Button) source).getText();
+          _builder_7.append(_text_6);
           _builder_7.append("\' requires it.");
           _xblockexpression_1 = this.<Control>reportIssue(IMessageProvider.INFORMATION, _builder_7.toString());
         }
@@ -568,6 +580,7 @@ public class AdvancedNewProjectPage extends WizardPage {
     this.createTestProject.setSelection(true);
     this.createIdeaProject.setSelection(false);
     this.createWebProject.setSelection(false);
+    this.createPEWebProject.setSelection(false);
     this.createSDKProject.setSelection(false);
     this.createP2Project.setSelection(false);
     this.select(this.preferredBuildSystem, IterableExtensions.<Enum<?>>head(((Iterable<Enum<?>>)Conversions.doWrapArray(BuildSystem.values()))));
@@ -593,6 +606,10 @@ public class AdvancedNewProjectPage extends WizardPage {
   
   public boolean isCreateWebProject() {
     return this.createWebProject.getSelection();
+  }
+  
+  public boolean isCreatePEWebProject() {
+    return this.createPEWebProject.getSelection();
   }
   
   public boolean isCreateSdkProject() {

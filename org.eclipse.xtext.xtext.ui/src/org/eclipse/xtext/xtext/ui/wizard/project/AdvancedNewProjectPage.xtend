@@ -36,6 +36,7 @@ class AdvancedNewProjectPage extends WizardPage {
 	Button createP2Project
 	Button createIdeaProject
 	Button createWebProject
+	Button createPEWebProject
 	Button createIdeProject
 	Button createTestProject
 	Combo preferredBuildSystem
@@ -78,6 +79,10 @@ class AdvancedNewProjectPage extends WizardPage {
 				]
 				createWebProject = CheckBox [
 					text = AdvancedNewProjectPage_projWeb
+					enabled = true
+				]
+				createPEWebProject = CheckBox [
+					text = AdvancedNewProjectPage_projPEWeb
 					enabled = true
 				]
 				createIdeProject = CheckBox [
@@ -124,7 +129,7 @@ class AdvancedNewProjectPage extends WizardPage {
 				validate(e)
 			}
 		}
-		val uiButtons = #[createUiProject,createIdeaProject,createWebProject]
+		val uiButtons = #[createUiProject,createIdeaProject,createWebProject,createPEWebProject]
 		val selectionControlUi = new SelectionAdapter() {
 			override widgetSelected(SelectionEvent e) {
 				if ((e.source as Button).selection) {
@@ -198,6 +203,7 @@ class AdvancedNewProjectPage extends WizardPage {
 		createUiProject.addSelectionListener(selectionControlUi)
 		createIdeaProject.addSelectionListener(selectionControlUi)
 		createWebProject.addSelectionListener(selectionControlUi)
+		createPEWebProject.addSelectionListener(selectionControlUi)
 		createIdeProject.addSelectionListener(selectionControl)
 		createSDKProject.addSelectionListener(selectionControl)
 		createP2Project.addSelectionListener(selectionControlUpdateSite)
@@ -214,7 +220,7 @@ class AdvancedNewProjectPage extends WizardPage {
 	}
 
 	def checkWidgets(SelectionEvent e) {
-		val uiButtons = #[createUiProject,createIdeaProject,createWebProject]
+		val uiButtons = #[createUiProject,createIdeaProject,createWebProject,createPEWebProject]
 		
 		if (preferredBuildSystem.isSelected(BuildSystem.MAVEN) && !isBundleResolved("org.eclipse.m2e.maven.runtime")) {
 			reportIssue(WARNING, AdvancedNewProjectPage_noM2e)
@@ -273,16 +279,22 @@ class AdvancedNewProjectPage extends WizardPage {
 			}
 		}
 
-		if (createWebProject.selection && preferredBuildSystem.isSelected(BuildSystem.NONE)) {
+		if ((createPEWebProject.selection || createWebProject.selection) && preferredBuildSystem.isSelected(BuildSystem.NONE)) {
+			var text ="";
+			if (createPEWebProject.selection ){
+				text = createWebProject.text;
+			}else{
+				text = createPEWebProject.text;
+			}	
 			if (preferredBuildSystem === source) {
 				reportIssue(ERROR, '''
-				The '«createWebProject.text»' project can not be build without a build system.
-				Please <a>deselect '«createWebProject.text»'</a>.''', [
+				The '«text»' project can not be build without a build system.
+				Please <a>deselect '«text»'</a>.''', [
 					createWebProject.selection = false
 				])
 			} else {
 				reportIssue(ERROR, '''
-				To build the '«createWebProject.text»' project, you need to choose Maven or Gradle build system.
+				To build the '«text»' project, you need to choose Maven or Gradle build system.
 				Select <a>Gradle</a> build.''', [
 					preferredBuildSystem.select(BuildSystem.GRADLE)
 				])
@@ -378,6 +390,7 @@ class AdvancedNewProjectPage extends WizardPage {
 		createTestProject.selection = true
 		createIdeaProject.selection = false
 		createWebProject.selection = false
+		createPEWebProject.selection = false
 		createSDKProject.selection = false
 		createP2Project.selection = false
 		preferredBuildSystem.select(BuildSystem.values.head)
@@ -403,6 +416,10 @@ class AdvancedNewProjectPage extends WizardPage {
 
 	def boolean isCreateWebProject() {
 		createWebProject.selection
+	}
+	
+	def boolean isCreatePEWebProject() {
+		createPEWebProject.selection
 	}
 
 	def boolean isCreateSdkProject() {
