@@ -21,6 +21,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -37,9 +39,11 @@ import org.eclipse.xtext.ui.MarkerTypes;
 import org.eclipse.xtext.ui.XtextProjectHelper;
 import org.eclipse.xtext.ui.editor.XtextEditor;
 import org.eclipse.xtext.ui.editor.model.IXtextDocument;
+import org.eclipse.xtext.ui.editor.model.XtextDocument;
 import org.eclipse.xtext.ui.editor.quickfix.IssueResolution;
 import org.eclipse.xtext.ui.editor.quickfix.IssueResolutionProvider;
 import org.eclipse.xtext.ui.editor.quickfix.MarkerResolutionGenerator;
+import org.eclipse.xtext.ui.editor.validation.ValidationJob;
 import org.eclipse.xtext.ui.shared.SharedStateModule;
 import org.eclipse.xtext.ui.testing.util.IResourcesSetupUtil;
 import org.eclipse.xtext.ui.testing.util.JavaProjectSetupUtil;
@@ -219,8 +223,8 @@ public class XtextGrammarQuickfixProviderTest extends AbstractXtextTests {
 			xtextEditor.doSave(new NullProgressMonitor());
 		}
 		InternalBuilderTest.fullBuild();
-
 		IXtextDocument document = xtextEditor.getDocument();
+		validateInEditor(document);
 		List<Issue> issues = getIssues(document);
 		assertFalse("Document has no issues, but should.", issues.isEmpty());
 
@@ -232,18 +236,42 @@ public class XtextGrammarQuickfixProviderTest extends AbstractXtextTests {
 		IResource resource = xtextEditor.getResource();
 		IMarker[] problems = resource.findMarkers(MarkerTypes.FAST_VALIDATION, true, IResource.DEPTH_INFINITE);
 		assertEquals("Resource should have " + issueCount + " error marker.", issueCount, problems.length);
-
+		validateInEditor(document);
 		MarkerResolutionGenerator instance = injector.getInstance(MarkerResolutionGenerator.class);
 		List<IMarkerResolution> resolutions = Lists.newArrayList(instance.getResolutions(problems[0]));
 		assertEquals(1, resolutions.size());
 		IMarkerResolution resolution = resolutions.iterator().next();
 		assertTrue(resolution instanceof WorkbenchMarkerResolution);
 		WorkbenchMarkerResolution workbenchResolution = (WorkbenchMarkerResolution) resolution;
-		workbenchResolution.run(workbenchResolution.findOtherMarkers(problems), new NullProgressMonitor());
+		IMarker primaryMarker = problems[0];
+		List<IMarker> others = Lists.newArrayList(workbenchResolution.findOtherMarkers(problems));
+		assertFalse(others.contains(primaryMarker));
+		assertEquals(problems.length - 1, others.size());
+		others.add(primaryMarker);
+		workbenchResolution.run(others.toArray(new IMarker[others.size()]), new NullProgressMonitor());
+		if (xtextEditor.isDirty()) {
+			xtextEditor.doSave(null);
+		}
 		InternalBuilderTest.cleanBuild();
 		problems = resource.findMarkers(MarkerTypes.FAST_VALIDATION, true, IResource.DEPTH_INFINITE);
 		assertEquals("Resource should have no error marker.", 0, problems.length);
 
+	}
+
+	private void validateInEditor(IXtextDocument document) {
+		Job validationJob = ((XtextDocument)document).getValidationJob();
+		validationJob.schedule();
+		boolean wasInterrupted = false;
+		do {
+			try {
+				Job.getJobManager().join(ValidationJob.XTEXT_VALIDATION_FAMILY, new NullProgressMonitor());
+				wasInterrupted = false;
+			} catch (OperationCanceledException e) {
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				wasInterrupted = true;
+			}
+		} while (wasInterrupted);
 	}
 
 	private XtextEditor editorForGrammar(String... bodyContent) throws PartInitException, CoreException {
